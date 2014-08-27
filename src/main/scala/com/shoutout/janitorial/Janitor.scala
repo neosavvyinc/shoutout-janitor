@@ -24,10 +24,12 @@ class Janitor extends Actor with ActorLogging {
       log.info("++++++++++++  Ending the Profile Cleanup Process  ++++++++++++")
     case CleanupOldShoutouts =>
       log.info("--------- Begining the Old Shoutout Cleanup Process ----------")
+
       log.info("+++++++++  Ending the Old Shoutout Cleanup Process  ++++++++++")
 
     case CleanupFullyViewedShoutouts =>
       log.info("-------- Begining the Viewed Shoutout Cleanup Process --------")
+
       log.info("++++++++  Ending the Viewed Shoutout Cleanup Process  ++++++++")
   }
 

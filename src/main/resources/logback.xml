@@ -1,6 +1,6 @@
 <configuration>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/filename.log</file>
+        <file>logs/shoutout-janitorial.log</file>
 
         <encoder>
             <pattern>%date %level %msg%n</pattern>
@@ -8,7 +8,7 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
             <maxIndex>10</maxIndex>
-            <FileNamePattern>logs/filename.log.%i.gz</FileNamePattern>
+            <FileNamePattern>logs/shoutout-janitorial.log.%i.gz</FileNamePattern>
         </rollingPolicy>
 
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">

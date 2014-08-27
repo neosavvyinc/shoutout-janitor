@@ -2,3 +2,7 @@
 .idea_modules/*
 target
 project/target
+
+shoutout-janitorial.log
+shoutout-janitorial.log*
+filename.log
