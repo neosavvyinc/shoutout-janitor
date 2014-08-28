@@ -55,7 +55,6 @@ package object repository {
 
     def * = (id.?, profilePictureUrl.?) <> (ShoutoutUser.tupled, ShoutoutUser.unapply)
   }
-  val baseShoutoutUsers = TableQuery[ShoutoutUserTable]
   object shoutoutUsers extends TableQuery(new ShoutoutUserTable(_)) {
     val findUserByUrl = this.findBy(_.profilePictureUrl)
   }
@@ -87,7 +86,67 @@ package object repository {
     }
   }
 
+  /**
+   * +-------------------+---------------+------+-----+---------+----------------+
+   * | Field             | Type          | Null | Key | Default | Extra          |
+   * +-------------------+---------------+------+-----+---------+----------------+
+   * | ID                | int(11)       | NO   | PRI | NULL    | auto_increment |
+   * | SENDER_ID         | int(11)       | NO   |     | NULL    |                |
+   * | RECIPIENT_ID      | int(11)       | NO   |     | NULL    |                |
+   * | TEXT              | varchar(1024) | NO   |     | NULL    |                |
+   * | IMAGE_URL         | varchar(256)  | NO   |     | NULL    |                |
+   * | IS_VIEWED         | tinyint(1)    | NO   |     | 0       |                |
+   * | VIEWED_TIMESTAMP  | datetime      | YES  |     | NULL    |                |
+   * | CREATED_TIMESTAMP | datetime      | NO   |     | NULL    |                |
+   * | IS_BLOCKED        | tinyint(1)    | NO   |     | 0       |                |
+   * | CONTENT_TYPE      | varchar(1024) | YES  |     | NULL    |                |
+   * +-------------------+---------------+------+-----+---------+----------------+
+   * @param tag
+   */
+  class ShoutoutTable(tag: Tag) extends Table[Shoutout](tag, "SHOUTOUTS") {
 
+    import com.github.tototoshi.slick.MySQLJodaSupport._
+
+    def id : Column[Long] = column[Long]("ID", O.PrimaryKey, O.AutoInc)
+    def imageUrl : Column[String] = column[String]("IMAGE_URL")
+    def isViewed : Column[Boolean] = column[Boolean]("IS_VIEWED")
+    def viewedTimestamp : Column[LocalDate] = column[LocalDate]("VIEWED_TIMESTAMP")
+    def createdTimestamp : Column[LocalDate] = column[LocalDate]("CREATED_TIMESTAMP")
+
+    def * = (id.?, imageUrl, isViewed, viewedTimestamp.?, createdTimestamp) <> (Shoutout.tupled, Shoutout.unapply)
+  }
+  val shoutouts = TableQuery[ShoutoutTable]
+
+  def findOlderThan( date : LocalDate ) : List[Shoutout] = {
+    db.withSession{ implicit session : Session =>
+      val q = shoutouts.filter( _.createdTimestamp < date )
+      println(q.selectStatement)
+      q.list
+    }
+  }
+
+  def deleteAll( list : List[Shoutout] ) : Unit = {
+    db.withSession{ implicit session : Session =>
+      list foreach( item => shoutouts.filter(_.id === item.id).delete )
+    }
+  }
+
+  def testOnlyShoutoutUpdateUrls() = {
+    db.withTransaction {
+      implicit session : Session  => {
+        val shouts = shoutouts.list()
+        shoutouts foreach( s => {
+          if(!( s.imageUrl contains "-copy") ) {
+            val newUrl = s.imageUrl.replaceAll("shoutout-prod-shouts", "shoutout-prod-shouts-copy")
+            val q = for {upShoutout <- shoutouts if upShoutout.id === s.id} yield upShoutout.imageUrl
+            if(!(s.imageUrl == Unit) ) {
+              q.update(newUrl)
+            }
+          }
+        })
+      }
+    }
+  }
 
 }
 

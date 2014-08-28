@@ -1,6 +1,7 @@
 package com.shoutout.janitorial
 
 import akka.actor.{Actor, ActorLogging}
+import com.shoutout.db.Shoutout
 import org.jets3t.service.model.S3Object
 
 /**
@@ -14,7 +15,7 @@ object Janitor {
 
 }
 
-class Janitor extends Actor with ActorLogging with ProfileJanitor {
+class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJanitor {
   import com.shoutout.janitorial.Janitor._
 
   def receive = {
@@ -37,6 +38,15 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor {
     case CleanupOldShoutouts =>
       log.info("--------- Begining the Old Shoutout Cleanup Process ----------")
 
+      // find all shoutouts older than X days
+      val oldShoutouts = findAllShoutoutsOlderThan(2)
+
+      val numDeleted = deleteS3ObjectsFor(oldShoutouts)
+
+      // delete all of them
+      delete(oldShoutouts)
+
+      log.info(s"                    Cleaned up $numDeleted urls           ")
       log.info("+++++++++  Ending the Old Shoutout Cleanup Process  ++++++++++")
 
     case CleanupFullyViewedShoutouts =>

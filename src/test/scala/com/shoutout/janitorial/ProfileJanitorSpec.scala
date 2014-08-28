@@ -31,11 +31,7 @@ class ProfileJanitorSpec extends Specification with ProfileJanitor {
 //      true must be equalTo true
 //    }
 
-    "delete image from S3" in {
 
-
-
-    }
   }
 
 }
