@@ -17,8 +17,8 @@ object JanitorSystem extends App {
   val janitor = system.actorOf(Props[Janitor])
 
   scheduler.schedule("ProfilePictureCleanupService", janitor, Janitor.CleanupProfiles)
-  scheduler.schedule("OldShoutoutCleanupService", janitor, Janitor.CleanupOldShoutouts)
-  scheduler.schedule("ViewedShoutoutCleanupService", janitor, Janitor.CleanupFullyViewedShoutouts)
+//  scheduler.schedule("OldShoutoutCleanupService", janitor, Janitor.CleanupOldShoutouts)
+//  scheduler.schedule("ViewedShoutoutCleanupService", janitor, Janitor.CleanupFullyViewedShoutouts)
 
 }
 
