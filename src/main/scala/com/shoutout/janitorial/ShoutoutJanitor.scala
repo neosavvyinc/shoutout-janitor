@@ -5,22 +5,19 @@ import com.shoutout.util.Dates
 
 import com.shoutout.db.repository._
 import org.jets3t.service.impl.rest.httpclient.RestS3Service
+import org.jets3t.service.model.S3Object
 import org.jets3t.service.security.AWSCredentials
 
 
 /**
  * Created by aparrish on 8/28/14.
  */
-trait ShoutoutJanitor {
+trait ShoutoutJanitor extends JanitorConfig {
 
   private lazy val s3 = {
-    val awsAccessKey = "AKIAJQEMCJMOSYLFGMXQ"
-    val awsSecretKey = "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"
-    val awsCredentials = new AWSCredentials(awsAccessKey, awsSecretKey)
+    val awsCredentials = new AWSCredentials(S3Configuration.accessKey, S3Configuration.secretKey)
     new RestS3Service(awsCredentials)
   }
-
-  val s3ShoutoutBucket = "shoutout-prod-shouts-copy"
 
   def findAllShoutoutsOlderThan( days : Int ) : List[Shoutout] = {
     val now = Dates.nowDT
@@ -33,6 +30,7 @@ trait ShoutoutJanitor {
   }
 
   def deleteS3ObjectsFor( shoutouts : List[Shoutout] ) : Int = {
+    import scala.language.postfixOps
 
     val uniqueUrls : Set[String] = shoutouts map { s=> s.imageUrl } toSet
 
@@ -40,9 +38,7 @@ trait ShoutoutJanitor {
       val key = s.substring(s.lastIndexOf("/") + 1, s.length)
 
       try {
-        val details = s3.getObjectDetails(s3ShoutoutBucket, key)
-        println(s"About to delete: $key")
-        s3.deleteObject(s3ShoutoutBucket, details.getKey)
+        s3.deleteObject(S3Configuration.shoutoutBucket, key)
       } catch {
         case e: Exception => println(s"Something went wrong deleting key: $key")
       }
@@ -60,6 +56,26 @@ trait ShoutoutJanitor {
     println(s"Found this many: $numToClean shoutouts to clean up")
     
     shoutouts
+  }
+
+  def isOrphanedShoutoutImage( url : String ) : Boolean = {
+    val shoutouts = findShoutoutsByUrl(url)
+    shoutouts.length == 0
+  }
+
+  def findAllS3ShoutoutImagesInBucket() : List[(String, S3Object)] = {
+
+    val objects = s3.listObjects(S3Configuration.shoutoutBucket).toList
+
+    objects map { obj =>
+      s3.getObjectDetails(S3Configuration.shoutoutBucket, obj.getKey)
+
+      (s3.createUnsignedObjectUrl(S3Configuration.shoutoutBucket,
+        obj.getKey,
+        false, true, false), obj)
+
+    }
+
   }
 
   //TEST ONLY

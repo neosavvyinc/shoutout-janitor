@@ -9,25 +9,23 @@ import com.shoutout.db.repository._
 /**
  * Created by aparrish on 8/27/14.
  */
-trait ProfileJanitor {
+trait ProfileJanitor extends JanitorConfig {
 
   private lazy val s3 = {
-    val awsAccessKey = "AKIAJQEMCJMOSYLFGMXQ"
-    val awsSecretKey = "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"
-    val awsCredentials = new AWSCredentials(awsAccessKey, awsSecretKey)
+    val awsCredentials = new AWSCredentials(
+      S3Configuration.accessKey,
+      S3Configuration.secretKey)
     new RestS3Service(awsCredentials)
   }
 
-  val s3Bucket = "shoutout-prod-profile-copy"
-
   def findAllS3ImagesInBucket() : List[(String, S3Object)] = {
 
-      val objects = s3.listObjects(s3Bucket).toList
+      val objects = s3.listObjects(S3Configuration.profileBucket).toList
 
       objects map { obj =>
-        s3.getObjectDetails(s3Bucket, obj.getKey)
+        s3.getObjectDetails(S3Configuration.profileBucket, obj.getKey)
 
-        (s3.createUnsignedObjectUrl(s3Bucket,
+        (s3.createUnsignedObjectUrl(S3Configuration.profileBucket,
           obj.getKey,
           false, true, false), obj)
 
@@ -41,7 +39,7 @@ trait ProfileJanitor {
   }
 
   def deleteImageFromS3( url : String, s3Object: S3Object ) = {
-    s3.deleteObject(s3Bucket, s3Object.getKey)
+    s3.deleteObject(S3Configuration.profileBucket, s3Object.getKey)
   }
 
   ///TEST ONLY

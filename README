@@ -1,5 +1,13 @@
-A sample for the Typesafe Stack (http://typesafe.com/stack).
+To setup your local machine to test the janitor you need to do the following:
 
-Akka 2.1.2 sample project using Scala and SBT.
+From the db/ directory:
 
-To run and test it use SBT invoke: 'sbt run'
+ `mysql -u root -p shoutout < prodBackup.sql`
+
+Cleanup your old production copy:
+
+ `for i in `aws s3 ls s3://shoutout-prod-shouts-copy | tr -s ' ' | cut -d ' ' -f 4`; do aws s3 rm s3://shoutout-prod-shouts-copy/$i; done;`
+
+Create a sync'd copy of the production s3 bucket:
+
+ `s3 sync s3://shoutout-prod-shouts s3://shoutout-prod-shouts-copy --grants full=uri=http://acs.amazonaws.com/groups/global/AllUsers`
