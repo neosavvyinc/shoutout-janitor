@@ -19,6 +19,7 @@ package object repository {
   import scala.slick.jdbc.{GetResult, StaticQuery => Q}
 
 
+
   object DBConfiguration {
     val statementCacheSize = 50
     val minConnectionsPerPartition = 100
@@ -128,6 +129,30 @@ package object repository {
   def deleteAll( list : List[Shoutout] ) : Unit = {
     db.withSession{ implicit session : Session =>
       list foreach( item => shoutouts.filter(_.id === item.id).delete )
+    }
+  }
+
+  def findShoutoutsToClean() : List[ShoutoutCleanupResult] = {
+    import Q.interpolation
+
+    db.withSession { implicit session : Session =>
+
+      implicit val getShoutoutResult = GetResult(r => ShoutoutCleanupResult(r.<<, r.<<, r.<<))
+
+      val cleanupQuery = sql"""SELECT ID, IMAGE_URL, IS_VIEWED, VIEWED_TIMESTAMP, CREATED_TIMESTAMP FROM SHOUTOUTS WHERE IMAGE_URL NOT IN (
+        SELECT DISTINCT
+          IMAGE_URL
+        FROM SHOUTOUTS
+        WHERE IS_VIEWED = 0 and IS_CLEANED = 0
+      ) AND IMAGE_URL IN (
+        SELECT DISTINCT
+          IMAGE_URL
+        FROM SHOUTOUTS
+        WHERE IS_VIEWED = 1 and IS_CLEANED = 0
+      ) AND IS_CLEANED = 0
+      """.as[ShoutoutCleanupResult]
+      cleanupQuery.list
+
     }
   }
 

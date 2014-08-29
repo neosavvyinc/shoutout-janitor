@@ -1,6 +1,6 @@
 package com.shoutout.janitorial
 
-import com.shoutout.db.Shoutout
+import com.shoutout.db.{ShoutoutCleanupResult, Shoutout}
 import com.shoutout.util.Dates
 
 import com.shoutout.db.repository._
@@ -49,6 +49,17 @@ trait ShoutoutJanitor {
     }
 
     shoutouts.length
+  }
+
+  def findExclusivelyViewedShoutouts() = {
+    val shoutouts = findShoutoutsToClean()
+
+    shoutouts.foreach { s : ShoutoutCleanupResult => println(s) }
+
+    val numToClean = shoutouts.length
+    println(s"Found this many: $numToClean shoutouts to clean up")
+    
+    shoutouts
   }
 
   //TEST ONLY

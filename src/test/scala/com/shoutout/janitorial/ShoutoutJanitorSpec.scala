@@ -20,6 +20,12 @@ class ShoutoutJanitorSpec extends Specification with ShoutoutJanitor {
 //      true must be equalTo true
 //    }
 
+    "find the right number to clean" in {
+      findExclusivelyViewedShoutouts()
+
+      true must be equalTo true
+    }
+
   }
 
 
