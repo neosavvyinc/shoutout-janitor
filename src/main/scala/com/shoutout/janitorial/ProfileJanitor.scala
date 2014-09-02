@@ -1,6 +1,7 @@
 package com.shoutout.janitorial
 
-import com.shoutout.db.ShoutoutUser
+import com.shoutout.db.{JanitorStat, ShoutoutUser}
+import com.shoutout.util.Dates
 import org.jets3t.service.impl.rest.httpclient.RestS3Service
 import org.jets3t.service.model.S3Object
 import org.jets3t.service.security.AWSCredentials
@@ -40,6 +41,14 @@ trait ProfileJanitor extends JanitorConfig {
 
   def deleteImageFromS3( url : String, s3Object: S3Object ) = {
     s3.deleteObject(S3Configuration.profileBucket, s3Object.getKey)
+  }
+
+  def updateCleanedProfileStats( count : Int ) = {
+//    insertJanitorStat(JanitorStat(None, "CleanedProfiles", Dates.nowLD, count))
+    val currentStats = findFlatStats()
+    updateFlatStats(currentStats.copy(
+      profileCleanup = count + currentStats.profileCleanup
+    ))
   }
 
   ///TEST ONLY

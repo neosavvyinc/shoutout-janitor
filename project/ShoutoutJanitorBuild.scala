@@ -1,5 +1,10 @@
 import sbt._
 import sbt.Keys._
+import sbtassembly.Plugin.{PathList, MergeStrategy, AssemblyKeys}
+import AssemblyKeys._
+
+import sbt._
+import sbt.Keys._
 
 object ShoutoutJanitorBuild extends Build {
 
@@ -29,11 +34,10 @@ object ShoutoutJanitorBuild extends Build {
       libraryDependencies += "org.quartz-scheduler" % "quartz" % "2.1.7",
 //      libraryDependencies += "com.typesafe.akka" %% "akka-quartz-scheduler" % "1.2.0-akka-2.1.x",
       libraryDependencies += "com.typesafe.slick" %% "slick" % "2.0.0",
+      libraryDependencies += "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.4",
 
-      libraryDependencies += "org.specs2" %% "specs2" % "2.3.13" % "test"
-
-
-
+      libraryDependencies += "org.specs2" %% "specs2" % "2.3.13" % "test")
   )
-  )
+
 }
+

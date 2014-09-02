@@ -1,6 +1,6 @@
 package com.shoutout.janitorial
 
-import com.shoutout.db.{ShoutoutCleanupResult, Shoutout}
+import com.shoutout.db.{JanitorFlatStat, JanitorStat, ShoutoutCleanupResult, Shoutout}
 import com.shoutout.util.Dates
 
 import com.shoutout.db.repository._
@@ -25,8 +25,8 @@ trait ShoutoutJanitor extends JanitorConfig {
     findOlderThan(xDaysAgo.toLocalDate)
   }
 
-  def delete(shoutouts: List[Shoutout]) = {
-    deleteAll(shoutouts)
+  def updateAsCleaned(shoutouts: List[Shoutout]) = {
+    updateAllAsCleaned(shoutouts)
   }
 
   def deleteS3ObjectsFor( shoutouts : List[Shoutout] ) : Int = {
@@ -77,6 +77,34 @@ trait ShoutoutJanitor extends JanitorConfig {
     }
 
   }
+
+  def updateOldShoutoutStats( shoutoutsCleaned : Int )= {
+//    insertJanitorStat(JanitorStat(None, "CleanedOldShoutouts", Dates.nowLD, shoutoutsCleaned))
+    val currentStats = findFlatStats()
+    updateFlatStats(currentStats.copy(
+      oldShoutoutsCleanup = shoutoutsCleaned + currentStats.oldShoutoutsCleanup
+    ))
+  }
+  def updateFullyViewedShoutsStats( shoutoutsCleaned : Int )= {
+//    insertJanitorStat(JanitorStat(None, "CleanedFullyViewedShoutouts", Dates.nowLD, shoutoutsCleaned))
+    val currentStats = findFlatStats()
+    updateFlatStats(currentStats.copy(
+      fullyViewedCleanup = shoutoutsCleaned + currentStats.fullyViewedCleanup
+    ))
+  }
+  def updateOrphanedShoutoutImageStats( shoutoutsCleaned : Int )= {
+//    insertJanitorStat(JanitorStat(None, "CleanedOrphanedShoutouts", Dates.nowLD, shoutoutsCleaned))
+    val currentStats = findFlatStats()
+    updateFlatStats(currentStats.copy(
+      orphanedShoutsCleanup = shoutoutsCleaned + currentStats.orphanedShoutsCleanup
+    ))
+  }
+
+  def findCurrentStats() : JanitorFlatStat = {
+    findFlatStats()
+  }
+
+
 
   //TEST ONLY
   //aws s3 sync s3://shoutout-prod-shouts s3://shoutout-prod-shouts-copy --grants full=uri=http://acs.amazonaws.com/groups/global/AllUsers

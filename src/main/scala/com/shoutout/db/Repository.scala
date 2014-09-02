@@ -120,10 +120,9 @@ package object repository extends JanitorConfig {
     }
   }
 
-  def deleteAll( list : List[Shoutout] ) : Unit = {
+  def updateAllAsCleaned( list : List[Shoutout] ) : Unit = {
     db.withSession{ implicit session : Session =>
       list foreach { item =>
-        //shoutouts.filter(_.id === item.id).update(item.copy(isClean = true))
         val q = for { s <- shoutouts if s.id === item.id } yield s.isClean
         q.update(true)
       }
@@ -181,5 +180,91 @@ package object repository extends JanitorConfig {
     }
   }
 
+  /**
+   * +---------------------+---------------+------+-----+---------+----------------+
+   * | Field               | Type          | Null | Key | Default | Extra          |
+   * +---------------------+---------------+------+-----+---------+----------------+
+   * | ID                  | int(11)       | NO   | PRI | NULL    | auto_increment |
+   * | ACTION_PERFORMED    | varchar(1024) | YES  |     | NULL    |                |
+   * | ACTION_DATE         | datetime      | YES  |     | NULL    |                |
+   * | ACTION_UPDATE_COUNT | int(11)       | YES  |     | NULL    |                |
+   * +---------------------+---------------+------+-----+---------+----------------+
+   */
+  class JanitorStatsTable(tag: Tag) extends Table[JanitorStat](tag, "JANITOR_STATS") {
+
+    import com.github.tototoshi.slick.MySQLJodaSupport._
+
+    def id : Column[Long] = column[Long]("ID", O.PrimaryKey, O.AutoInc)
+    def actionPerformed : Column[String] = column[String]("ACTION_PERFORMED")
+    def actionDate : Column[LocalDate] = column[LocalDate]("ACTION_DATE")
+    def actionUpdateCount : Column[Int] = column[Int]("ACTION_UPDATE_COUNT")
+
+    def * = (id.?, actionPerformed, actionDate, actionUpdateCount) <> (JanitorStat.tupled, JanitorStat.unapply)
+  }
+  object janitorStats extends TableQuery(new JanitorStatsTable(_)) {
+  }
+  
+  def insertJanitorStat( stat : JanitorStat ) : Boolean = {
+    db.withSession{ implicit session : Session =>
+      janitorStats.insert(stat) > 0
+    }
+  }
+
+  /**
+   * +---------------------------------+----------+------+-----+-------------------+----------------+
+   * | Field                           | Type     | Null | Key | Default           | Extra          |
+   * +---------------------------------+----------+------+-----+-------------------+----------------+
+   * | ID                              | int(11)  | NO   | PRI | NULL              | auto_increment |
+   * | PROFILE_CLEANUP                 | int(11)  | NO   |     | 0                 |                |
+   * | OLD_SHOUTOUTS_CLEANUP           | int(11)  | NO   |     | 0                 |                |
+   * | FULLY_VIEWED_CLEANUP            | int(11)  | NO   |     | 0                 |                |
+   * | ORPHANED_SHOUTS_CLEANUP         | int(11)  | NO   |     | 0                 |                |
+   * | ALLTIME_PROFILE_CLEANUP         | int(11)  | NO   |     | 0                 |                |
+   * | ALLTIME_OLD_SHOUTOUTS_CLEANUP   | int(11)  | NO   |     | 0                 |                |
+   * | ALLTIME_FULLY_VIEWED_CLEANUP    | int(11)  | NO   |     | 0                 |                |
+   * | ALLTIME_ORPHANED_SHOUTS_CLEANUP | int(11)  | NO   |     | 0                 |                |
+   * +---------------------------------+----------+------+-----+-------------------+----------------+
+   */
+  class JanitorFlatStatsTable(tag : Tag) extends Table[JanitorFlatStat](tag, "JANITOR_FLAT_STATS") {
+
+    import com.github.tototoshi.slick.MySQLJodaSupport._
+
+    def id : Column[Long] = column[Long]("ID", O.PrimaryKey, O.AutoInc)
+    def profileCleanup : Column[Int] = column[Int]("PROFILE_CLEANUP")
+    def oldShoutoutsCleanup : Column[Int] = column[Int]("OLD_SHOUTOUTS_CLEANUP")
+    def fullyViewedCleanup : Column[Int] = column[Int]("FULLY_VIEWED_CLEANUP")
+    def orphanedShoutsCleanup : Column[Int] = column[Int]("ORPHANED_SHOUTS_CLEANUP")
+    def alltimeProfileCleanup : Column[Int] = column[Int]("ALLTIME_PROFILE_CLEANUP")
+    def alltimeOldShoutoutsCleanup : Column[Int] = column[Int]("ALLTIME_OLD_SHOUTOUTS_CLEANUP")
+    def alltimeFullyViewedCleanup : Column[Int] = column[Int]("ALLTIME_FULLY_VIEWED_CLEANUP")
+    def alltimeOrphanedShoutsCleanup : Column[Int] = column[Int]("ALLTIME_ORPHANED_SHOUTS_CLEANUP")
+
+    def * = (
+      id.?,
+      profileCleanup,
+      oldShoutoutsCleanup,
+      fullyViewedCleanup,
+      orphanedShoutsCleanup,
+      alltimeProfileCleanup,
+      alltimeOldShoutoutsCleanup,
+      alltimeFullyViewedCleanup,
+      alltimeOrphanedShoutsCleanup) <> (JanitorFlatStat.tupled, JanitorFlatStat.unapply)
+
+  }
+
+  object janitorFlatStats extends TableQuery(new JanitorFlatStatsTable(_)) {
+  }
+
+  def updateFlatStats( stat : JanitorFlatStat ) : Boolean = {
+    db.withSession{ implicit session : Session =>
+      janitorFlatStats.update(stat) > 0
+    }
+  }
+
+  def findFlatStats() : JanitorFlatStat = {
+    db.withSession{ implicit session : Session =>
+      janitorFlatStats.first()
+    }
+  }
 }
 
