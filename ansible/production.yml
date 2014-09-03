@@ -1,0 +1,9 @@
+- hosts: prod
+  user: ubuntu
+  sudo: True
+  roles:
+    - deploy
+  vars:
+      adminContact: "aparrish@neosavvy.com"
+      shoutoutUID: "ubuntu"
+      shoutoutGID: "ubuntu"

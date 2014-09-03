@@ -1,0 +1,44 @@
+- name: Make sure the /opt/janitor directory exists
+  file: dest=/opt/janitor mode=755 state=directory owner={{ shoutoutUID }} group={{ shoutoutGID }}
+
+- name: Make sure the /opt/janitor/logs directory exists
+  file: dest=/opt/janitor/logs mode=755 state=directory owner={{ shoutoutUID }} group={{ shoutoutGID }}
+
+
+- name: Copy the deployable jar file to the target server
+  copy: src=janitor.jar dest=/opt/janitor/janitor.jar
+
+- name: Copy the Restart Script
+  template: src=restart.sh dest=/opt/janitor/restart.sh mode=0755 owner={{ shoutoutUID }} group={{ shoutoutGID }}
+
+#- name: Run the Restart Script
+#  shell: /opt/janitor/restart.sh
+
+- name: Install supervisord
+  easy_install: name=supervisor
+
+- name: Initialize our supervisor directory
+  file: path=/etc/supervisor owner=root group=root state=directory
+
+- name: Fresh Supervisor Janitor Conf
+  copy: src=supervisord.janitor.conf dest=/etc/supervisor/supervisord.janitor.conf
+
+- name: Copy the Supervisord Janitor Startup Script
+  copy: src=supervisord.janitor dest=/etc/init.d/supervisord.janitor mode=0755
+
+- name: Ensure both are in default run levels
+  command: update-rc.d supervisord.{{ item }} defaults
+  with_items:
+    - janitor
+
+- name: Kill any running Janitor Supervisord scripts
+  shell: kill -9 $(ps aux | grep supervisord | grep janitor | awk '{print $2}')
+  ignore_errors: yes
+  sudo: True
+
+- name: Kill any running Janitor Java Processes
+  shell: kill -9 $(ps aux | grep '[j]ava' | grep janitor | awk '{print $2}')
+  ignore_errors: yes
+
+- name: Restart the Supervisord Script
+  command: /etc/init.d/supervisord.janitor restart

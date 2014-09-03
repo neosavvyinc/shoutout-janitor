@@ -106,10 +106,6 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
       stats.alltimeFullyViewedCleanup = currentStats.alltimeFullyViewedCleanup
       stats.alltimeOrphanedShoutsCleanup = currentStats.alltimeOrphanedShoutsCleanup
 
-
-      //send the mail to all the configured recipients
-      val recipients = "aparrish@neosavvy.com" :: Nil
-
       val formattedUpdateString = s"""
         | <br/> We cleaned up a lot of stuff today:
         | <br/>
@@ -120,10 +116,10 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
         | <br/>
         | <br/> Over all time we have cleaned a lot of junk:
         | <br/>
-        | <br/> ${stats.alltimeProfileCleanup} Profile Images were cleaned from S3.
-        | <br/> ${stats.alltimeOldShoutoutsCleanup} Old Shoutouts were cleaned from S3 and the DB.
-        | <br/> ${stats.alltimeFullyViewedCleanup} Fully Viewed Shoutouts were cleaned from S3 and the DB.
-        | <br/> ${stats.alltimeOrphanedShoutsCleanup} Orphaned Shoutout Images were cleaned from S3.
+        | <br/> ${stats.alltimeProfileCleanup + stats.profileCleanup} Profile Images were cleaned from S3.
+        | <br/> ${stats.alltimeOldShoutoutsCleanup + stats.oldShoutoutsCleanup} Old Shoutouts were cleaned from S3 and the DB.
+        | <br/> ${stats.alltimeFullyViewedCleanup + stats.fullyViewedCleanup} Fully Viewed Shoutouts were cleaned from S3 and the DB.
+        | <br/> ${stats.alltimeOrphanedShoutsCleanup + stats.orphanedShoutsCleanup} Orphaned Shoutout Images were cleaned from S3.
         | <br/>
         | <br/> That is all, holler at your boy.
         | <br/>
@@ -136,7 +132,7 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
           MandrillSettings.smtpPort,
           MandrillSettings.smtpHost,
           MandrillSettings.username),
-          recipients.toArray,
+          MandrillSettings.recipients,
           stats,
           formattedUpdateString
       )

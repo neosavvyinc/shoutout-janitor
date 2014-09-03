@@ -7,6 +7,7 @@ import com.microtripit.mandrillapp.lutung.view.MandrillMessageStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by aparrish on 2/22/14.
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 public class MandrillUtil {
 
 
-    public static void sendMailViaMandrill( MandrillConfiguration configuration, String[] recipientEmail, Stats stats, String updateString ) throws IOException, MandrillApiError {
+    public static void sendMailViaMandrill( MandrillConfiguration configuration, List<String> recipientEmail, Stats stats, String updateString ) throws IOException, MandrillApiError {
 
         MandrillApi mandrillApi  = new MandrillApi(configuration.getApiKey());
 
@@ -29,8 +30,7 @@ public class MandrillUtil {
 
         ArrayList<MandrillMessage.Recipient> recipients = new ArrayList<MandrillMessage.Recipient>();
 
-        for (int i = 0; i < recipientEmail.length; i++) {
-            String recipientEmailAddress = recipientEmail[i];
+        for (String recipientEmailAddress : recipientEmail) {
             MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
             recipient.setEmail(recipientEmailAddress);
             recipients.add(recipient);

@@ -47,6 +47,7 @@ trait JanitorConfig {
     val smtpHost = mandrill.getString("smtpHost")
     val smtpPort = mandrill.getString("smtpPort")
     val username = mandrill.getString("username")
+    val recipients = mandrill.getStringList("recipients")
 
     private def mandrill = cfg.getConfig("mandrill")
   }
