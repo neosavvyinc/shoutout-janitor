@@ -6,3 +6,4 @@ project/target
 shoutout-janitorial.log
 shoutout-janitorial.log*
 filename.log
+ansible/roles/deploy/files/janitor.jar
