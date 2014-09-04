@@ -115,16 +115,18 @@ package object repository extends JanitorConfig {
 
   def findOlderThan( date : LocalDate ) : List[Shoutout] = {
     db.withSession{ implicit session : Session =>
-      val q = shoutouts.filter( _.createdTimestamp < date )
+
+      val q = for { s <- shoutouts if s.createdTimestamp < date && s.isClean === false } yield s
       q.list
+
     }
   }
 
   def updateAllAsCleaned( list : List[Shoutout] ) : Unit = {
     db.withSession{ implicit session : Session =>
       list foreach { item =>
-        val q = for { s <- shoutouts if s.id === item.id } yield s.isClean
-        q.update(true)
+        val q = for { s <- shoutouts if s.id === item.id } yield (s.isClean, s.imageUrl)
+        q.update(true, "")
       }
     }
   }

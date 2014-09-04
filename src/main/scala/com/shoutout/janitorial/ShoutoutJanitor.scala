@@ -44,7 +44,11 @@ trait ShoutoutJanitor extends JanitorConfig {
       }
     }
 
-    shoutouts.length
+    uniqueUrls.toList.length
+  }
+
+  def deleteShoutoutImageFromS3( url : String, s3Object: S3Object ) = {
+    s3.deleteObject(S3Configuration.shoutoutBucket, s3Object.getKey)
   }
 
   def findExclusivelyViewedShoutouts() = {

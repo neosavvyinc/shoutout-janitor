@@ -78,7 +78,7 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
 
       imageUrls map { s3tup =>
         if( isOrphanedShoutoutImage(s3tup._1) ) {
-          deleteImageFromS3( s3tup._1, s3tup._2 )
+          val numCleaned = deleteShoutoutImageFromS3( s3tup._1, s3tup._2 )
           shoutoutsCleaned = shoutoutsCleaned + 1
         }
       }
