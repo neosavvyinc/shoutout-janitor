@@ -32,13 +32,14 @@
     - janitor
 
 - name: Kill any running Janitor Supervisord scripts
-  shell: kill -9 $(ps aux | grep supervisord | grep janitor | awk '{print $2}')
+  shell: kill -9 $(ps aux | grep '[s]upervisord' | grep janitor | awk '{print $2}')
   ignore_errors: yes
   sudo: True
 
 - name: Kill any running Janitor Java Processes
   shell: kill -9 $(ps aux | grep '[j]ava' | grep janitor | awk '{print $2}')
   ignore_errors: yes
+  sudo: True
 
 - name: Restart the Supervisord Script
   command: /etc/init.d/supervisord.janitor restart
