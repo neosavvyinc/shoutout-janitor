@@ -54,12 +54,14 @@ trait ShoutoutJanitor extends JanitorConfig {
   def findExclusivelyViewedShoutouts() = {
     val shoutouts = findShoutoutsToClean()
 
-    shoutouts.foreach { s : ShoutoutCleanupResult => println(s) }
-
     val numToClean = shoutouts.length
     println(s"Found this many: $numToClean shoutouts to clean up")
     
     shoutouts
+  }
+
+  def findWelcomeShoutouts() = {
+    findViewedWelcomeImages()
   }
 
   def isOrphanedShoutoutImage( url : String ) : Boolean = {

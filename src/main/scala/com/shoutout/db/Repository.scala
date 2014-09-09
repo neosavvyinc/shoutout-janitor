@@ -138,6 +138,15 @@ package object repository extends JanitorConfig {
 
       implicit val getShoutoutResult = GetResult(r => ShoutoutCleanupResult(r.<<, r.<<, r.<<))
 
+      /**
+       * This query selects from two sets:
+       *
+       * Set 1. All the distinct S3 images that are not viewed yet and are yet to be cleaned
+       * Set 2. All the distinct S3 images that have been either viewed or blocked
+       *
+       * The outer query provides a list of Shoutouts that are exclusively not in the first set and that are in the second set.
+       * This means we will clean images only when all references to the Image in S3 have been viewed.
+       */
       val cleanupQuery = sql"""SELECT ID, IMAGE_URL, IS_VIEWED, VIEWED_TIMESTAMP, CREATED_TIMESTAMP FROM SHOUTOUTS WHERE IMAGE_URL NOT IN (
         SELECT DISTINCT
           IMAGE_URL
@@ -152,6 +161,20 @@ package object repository extends JanitorConfig {
       """.as[ShoutoutCleanupResult]
       cleanupQuery.list
 
+    }
+  }
+
+  def findViewedWelcomeImages() : List[ShoutoutCleanupResult] = {
+    import Q.interpolation
+
+    db.withSession { implicit session : Session =>
+      implicit val getShoutoutResult = GetResult(r => ShoutoutCleanupResult(r.<<, r.<<, r.<<))
+      val cleanupQuery =
+
+        sql"""select ID, IMAGE_URL, IS_VIEWED, VIEWED_TIMESTAMP, CREATED_TIMESTAMP
+              from SHOUTOUTS where SENDER_ID = 1 and IS_VIEWED = 1 and IS_CLEANED = 0""".as[ShoutoutCleanupResult]
+
+      cleanupQuery.list
     }
   }
 

@@ -15,6 +15,7 @@ object Janitor {
   case object CleanupOldShoutouts
   case object CleanupFullyViewedShoutouts
   case object CleanupOrphanedShoutoutImages
+  case object CleanupWelcomeShoutouts
   case object SendMailSummary
 
 }
@@ -61,9 +62,12 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
 
       val shoutsToClean = findExclusivelyViewedShoutouts()
       val shoutouts = shoutsToClean.map{ s => Shoutout(s.id, s.imageUrl, s.isViewed, None, Dates.nowLD)}
-      val numDeleted = deleteS3ObjectsFor( shoutouts )
+      val welcomeShoutouts = findViewedWelcomeImages() map { s => Shoutout(s.id, s.imageUrl, s.isViewed, None, Dates.nowLD)}
+
+      val numDeleted = deleteS3ObjectsFor( shoutouts ) + welcomeShoutouts.length
 
       updateAsCleaned(shoutouts)
+      updateAsCleaned(welcomeShoutouts)
 
       updateFullyViewedShoutsStats(numDeleted)
 
@@ -88,6 +92,13 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
       log.info(s"                 Cleaned up $shoutoutsCleaned urls                ")
       log.info("+++++  Ending the Shoutout Orphan Image Cleanup Process  +++++")
 
+    case CleanupWelcomeShoutouts =>
+
+      log.info("------- Cleaning up the Welcome Shoutouts -------")
+
+
+
+      log.info("++++ Done cleaning up the Welcome Shoutouts +++++")
 
     case SendMailSummary =>
 
