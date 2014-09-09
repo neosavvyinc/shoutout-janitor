@@ -12,7 +12,8 @@ case class Shoutout(id : Option[Long],
                     isViewed : Boolean,
                     viewedByDate : Option[LocalDate],
                     createdTimestamp : LocalDate,
-                    isClean : Boolean = false)
+                    isClean : Boolean = false,
+                    isBlocked : Boolean = false)
 
 case class ShoutoutCleanupResult(id : Option[Long],
                                  imageUrl : String,

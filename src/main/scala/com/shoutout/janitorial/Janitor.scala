@@ -60,14 +60,15 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
     case CleanupFullyViewedShoutouts =>
       log.info("-------- Begining the Viewed Shoutout Cleanup Process --------")
 
-      val shoutsToClean = findExclusivelyViewedShoutouts()
-      val shoutouts = shoutsToClean.map{ s => Shoutout(s.id, s.imageUrl, s.isViewed, None, Dates.nowLD)}
+      val shoutouts = findExclusivelyViewedShoutouts() map{ s => Shoutout(s.id, s.imageUrl, s.isViewed, None, Dates.nowLD)}
       val welcomeShoutouts = findViewedWelcomeImages() map { s => Shoutout(s.id, s.imageUrl, s.isViewed, None, Dates.nowLD)}
+      val blockedShoutouts = findNonCleanedBlocked()
 
-      val numDeleted = deleteS3ObjectsFor( shoutouts ) + welcomeShoutouts.length
+      val numDeleted = deleteS3ObjectsFor( shoutouts ) + welcomeShoutouts.length + blockedShoutouts.length
 
       updateAsCleaned(shoutouts)
       updateAsCleaned(welcomeShoutouts)
+      updateAsCleaned(blockedShoutouts)
 
       updateFullyViewedShoutsStats(numDeleted)
 

@@ -105,8 +105,9 @@ package object repository extends JanitorConfig {
     def viewedTimestamp : Column[LocalDate] = column[LocalDate]("VIEWED_TIMESTAMP")
     def createdTimestamp : Column[LocalDate] = column[LocalDate]("CREATED_TIMESTAMP")
     def isClean : Column[Boolean] = column[Boolean]("IS_CLEANED")
+    def isBlocked : Column[Boolean] = column[Boolean]("IS_BLOCKED")
 
-    def * = (id.?, imageUrl, isViewed, viewedTimestamp.?, createdTimestamp, isClean) <> (Shoutout.tupled, Shoutout.unapply)
+    def * = (id.?, imageUrl, isViewed, viewedTimestamp.?, createdTimestamp, isClean, isBlocked) <> (Shoutout.tupled, Shoutout.unapply)
   }
 //  val shoutouts = TableQuery[ShoutoutTable]
   object shoutouts extends TableQuery(new ShoutoutTable(_)) {
@@ -175,6 +176,13 @@ package object repository extends JanitorConfig {
               from SHOUTOUTS where SENDER_ID = 1 and IS_VIEWED = 1 and IS_CLEANED = 0""".as[ShoutoutCleanupResult]
 
       cleanupQuery.list
+    }
+  }
+
+  def findNonCleanedBlocked() : List[Shoutout] = {
+    db.withSession{ implicit s : Session =>
+      val q = for { s <- shoutouts if s.isBlocked === true && s.isClean === false } yield s
+      q.list
     }
   }
 
