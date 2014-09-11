@@ -44,7 +44,6 @@ trait ProfileJanitor extends JanitorConfig {
   }
 
   def updateCleanedProfileStats( count : Int ) = {
-//    insertJanitorStat(JanitorStat(None, "CleanedProfiles", Dates.nowLD, count))
     val currentStats = findFlatStats()
     updateFlatStats(currentStats.copy(
       profileCleanup = count + currentStats.profileCleanup

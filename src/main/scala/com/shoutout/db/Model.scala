@@ -30,8 +30,10 @@ case class JanitorFlatStat( id : Option[Long]
                             ,oldShoutoutsCleanup : Int
                             ,fullyViewedCleanup : Int
                             ,orphanedShoutsCleanup : Int
+                            ,s3ImagesCleanup : Int
                             ,alltimeProfileCleanup : Int
                             ,alltimeOldShoutoutsCleanup : Int
                             ,alltimeFullyViewedCleanup : Int
                             ,alltimeOrphanedShoutsCleanup : Int
+                            ,alltimeS3ImagesCleanup: Int
                             )

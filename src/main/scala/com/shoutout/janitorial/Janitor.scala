@@ -15,7 +15,6 @@ object Janitor {
   case object CleanupOldShoutouts
   case object CleanupFullyViewedShoutouts
   case object CleanupOrphanedShoutoutImages
-  case object CleanupWelcomeShoutouts
   case object SendMailSummary
 
 }
@@ -52,7 +51,8 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
 
       updateAsCleaned(oldShoutouts)
 
-      updateOldShoutoutStats(numDeleted)
+      updateOldShoutoutStats(oldShoutouts.length)
+      updateS3Stats(numDeleted)
 
       log.info(s"                    Cleaned up $numDeleted urls           ")
       log.info("+++++++++  Ending the Old Shoutout Cleanup Process  ++++++++++")
@@ -64,13 +64,15 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
       val welcomeShoutouts = findViewedWelcomeImages() map { s => Shoutout(s.id, s.imageUrl, s.isViewed, None, Dates.nowLD)}
       val blockedShoutouts = findNonCleanedBlocked()
 
-      val numDeleted = deleteS3ObjectsFor( shoutouts ) + welcomeShoutouts.length + blockedShoutouts.length
+      val numS3Deleted = deleteS3ObjectsFor( shoutouts )
+      val numDeleted =  shoutouts.length + welcomeShoutouts.length + blockedShoutouts.length
 
       updateAsCleaned(shoutouts)
       updateAsCleaned(welcomeShoutouts)
       updateAsCleaned(blockedShoutouts)
 
       updateFullyViewedShoutsStats(numDeleted)
+      updateS3Stats(numS3Deleted)
 
       log.info(s"                    Cleaned up $numDeleted urls           ")
       log.info("++++++++  Ending the Viewed Shoutout Cleanup Process  ++++++++")
@@ -80,26 +82,21 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
 
       val imageUrls : List[(String, S3Object)] = findAllS3ShoutoutImagesInBucket()
       var shoutoutsCleaned = 0
+      var numCleaned = 0
 
       imageUrls map { s3tup =>
         if( isOrphanedShoutoutImage(s3tup._1) ) {
-          val numCleaned = deleteShoutoutImageFromS3( s3tup._1, s3tup._2 )
+          deleteShoutoutImageFromS3( s3tup._1, s3tup._2 )
           shoutoutsCleaned = shoutoutsCleaned + 1
+          numCleaned = numCleaned + 1
         }
       }
 
       updateOrphanedShoutoutImageStats( shoutoutsCleaned )
+      updateS3Stats(numCleaned)
 
       log.info(s"                 Cleaned up $shoutoutsCleaned urls                ")
       log.info("+++++  Ending the Shoutout Orphan Image Cleanup Process  +++++")
-
-    case CleanupWelcomeShoutouts =>
-
-      log.info("------- Cleaning up the Welcome Shoutouts -------")
-
-
-
-      log.info("++++ Done cleaning up the Welcome Shoutouts +++++")
 
     case SendMailSummary =>
 
@@ -111,11 +108,13 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
       stats.profileCleanup = currentStats.profileCleanup
       stats.oldShoutoutsCleanup = currentStats.oldShoutoutsCleanup
       stats.fullyViewedCleanup = currentStats.fullyViewedCleanup
+      stats.s3Images = currentStats.s3ImagesCleanup
       stats.orphanedShoutsCleanup = currentStats.orphanedShoutsCleanup
 
       stats.alltimeProfileCleanup = currentStats.alltimeProfileCleanup
       stats.alltimeOldShoutoutsCleanup = currentStats.alltimeOldShoutoutsCleanup
       stats.alltimeFullyViewedCleanup = currentStats.alltimeFullyViewedCleanup
+      stats.alltimeS3Images = currentStats.alltimeS3ImagesCleanup
       stats.alltimeOrphanedShoutsCleanup = currentStats.alltimeOrphanedShoutsCleanup
 
       val formattedUpdateString = s"""
@@ -123,14 +122,16 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
         | <br/>
         | <br/> ${stats.profileCleanup} Profile Images were cleaned from S3.
         | <br/> ${stats.oldShoutoutsCleanup} Old Shoutouts were cleaned from S3 and the DB.
-        | <br/> ${stats.fullyViewedCleanup} Fully Viewed Shoutouts were cleaned from S3 and the DB.
+        | <br/> ${stats.fullyViewedCleanup} Fully Viewed Shoutouts were cleaned from the DB.
+        | <br/> ${stats.s3Images} S3 images were cleaned up.
         | <br/> ${stats.orphanedShoutsCleanup} Orphaned Shoutout Images were cleaned from S3.
         | <br/>
         | <br/> Over all time we have cleaned a lot of junk:
         | <br/>
         | <br/> ${stats.alltimeProfileCleanup + stats.profileCleanup} Profile Images were cleaned from S3.
         | <br/> ${stats.alltimeOldShoutoutsCleanup + stats.oldShoutoutsCleanup} Old Shoutouts were cleaned from S3 and the DB.
-        | <br/> ${stats.alltimeFullyViewedCleanup + stats.fullyViewedCleanup} Fully Viewed Shoutouts were cleaned from S3 and the DB.
+        | <br/> ${stats.alltimeFullyViewedCleanup + stats.fullyViewedCleanup} Fully Viewed Shoutouts were cleaned from the DB.
+        | <br/> ${stats.alltimeS3Images + stats.s3Images} S3 Images were cleaned over all time.
         | <br/> ${stats.alltimeOrphanedShoutsCleanup + stats.orphanedShoutsCleanup} Orphaned Shoutout Images were cleaned from S3.
         | <br/>
         | <br/> That is all, holler at your boy.
@@ -151,11 +152,12 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
 
       // reset the counters and update the alltime stats
       updateFlatStats( JanitorFlatStat(
-        currentStats.id, 0, 0, 0, 0,
+        currentStats.id, 0, 0, 0, 0, 0,
         currentStats.profileCleanup + currentStats.alltimeProfileCleanup,
         currentStats.oldShoutoutsCleanup + currentStats.alltimeOldShoutoutsCleanup,
         currentStats.fullyViewedCleanup + currentStats.alltimeFullyViewedCleanup,
-        currentStats.orphanedShoutsCleanup + currentStats.alltimeOrphanedShoutsCleanup
+        currentStats.orphanedShoutsCleanup + currentStats.alltimeOrphanedShoutsCleanup,
+        currentStats.s3ImagesCleanup + currentStats.alltimeS3ImagesCleanup
         )
       )
 

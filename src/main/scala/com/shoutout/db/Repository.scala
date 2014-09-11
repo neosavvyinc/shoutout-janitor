@@ -267,10 +267,12 @@ package object repository extends JanitorConfig {
     def oldShoutoutsCleanup : Column[Int] = column[Int]("OLD_SHOUTOUTS_CLEANUP")
     def fullyViewedCleanup : Column[Int] = column[Int]("FULLY_VIEWED_CLEANUP")
     def orphanedShoutsCleanup : Column[Int] = column[Int]("ORPHANED_SHOUTS_CLEANUP")
+    def s3ImagesCleanup: Column[Int] = column[Int]("CLEANED_S3_IMAGES")
     def alltimeProfileCleanup : Column[Int] = column[Int]("ALLTIME_PROFILE_CLEANUP")
     def alltimeOldShoutoutsCleanup : Column[Int] = column[Int]("ALLTIME_OLD_SHOUTOUTS_CLEANUP")
     def alltimeFullyViewedCleanup : Column[Int] = column[Int]("ALLTIME_FULLY_VIEWED_CLEANUP")
     def alltimeOrphanedShoutsCleanup : Column[Int] = column[Int]("ALLTIME_ORPHANED_SHOUTS_CLEANUP")
+    def alltimes3ImagesCleanup: Column[Int] = column[Int]("ALLTIME_CLEANED_S3_IMAGES")
 
     def * = (
       id.?,
@@ -278,11 +280,12 @@ package object repository extends JanitorConfig {
       oldShoutoutsCleanup,
       fullyViewedCleanup,
       orphanedShoutsCleanup,
+      s3ImagesCleanup,
       alltimeProfileCleanup,
       alltimeOldShoutoutsCleanup,
       alltimeFullyViewedCleanup,
-      alltimeOrphanedShoutsCleanup) <> (JanitorFlatStat.tupled, JanitorFlatStat.unapply)
-
+      alltimeOrphanedShoutsCleanup,
+      alltimes3ImagesCleanup) <> (JanitorFlatStat.tupled, JanitorFlatStat.unapply)
   }
 
   object janitorFlatStats extends TableQuery(new JanitorFlatStatsTable(_)) {

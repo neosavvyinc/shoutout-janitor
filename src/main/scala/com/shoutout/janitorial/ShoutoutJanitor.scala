@@ -85,24 +85,27 @@ trait ShoutoutJanitor extends JanitorConfig {
   }
 
   def updateOldShoutoutStats( shoutoutsCleaned : Int )= {
-//    insertJanitorStat(JanitorStat(None, "CleanedOldShoutouts", Dates.nowLD, shoutoutsCleaned))
     val currentStats = findFlatStats()
     updateFlatStats(currentStats.copy(
       oldShoutoutsCleanup = shoutoutsCleaned + currentStats.oldShoutoutsCleanup
     ))
   }
   def updateFullyViewedShoutsStats( shoutoutsCleaned : Int )= {
-//    insertJanitorStat(JanitorStat(None, "CleanedFullyViewedShoutouts", Dates.nowLD, shoutoutsCleaned))
     val currentStats = findFlatStats()
     updateFlatStats(currentStats.copy(
       fullyViewedCleanup = shoutoutsCleaned + currentStats.fullyViewedCleanup
     ))
   }
   def updateOrphanedShoutoutImageStats( shoutoutsCleaned : Int )= {
-//    insertJanitorStat(JanitorStat(None, "CleanedOrphanedShoutouts", Dates.nowLD, shoutoutsCleaned))
     val currentStats = findFlatStats()
     updateFlatStats(currentStats.copy(
       orphanedShoutsCleanup = shoutoutsCleaned + currentStats.orphanedShoutsCleanup
+    ))
+  }
+  def updateS3Stats( shoutoutsCleaned : Int )= {
+    val currentStats = findFlatStats()
+    updateFlatStats(currentStats.copy(
+      s3ImagesCleanup = shoutoutsCleaned + currentStats.s3ImagesCleanup
     ))
   }
 

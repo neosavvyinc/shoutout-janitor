@@ -9,9 +9,11 @@ public class Stats {
     public Integer oldShoutoutsCleanup = 0;
     public Integer fullyViewedCleanup = 0;
     public Integer orphanedShoutsCleanup = 0;
+    public Integer s3Images = 0;
     public Integer alltimeProfileCleanup = 0;
     public Integer alltimeOldShoutoutsCleanup = 0;
     public Integer alltimeFullyViewedCleanup = 0;
     public Integer alltimeOrphanedShoutsCleanup = 0;
+    public Integer alltimeS3Images = 0;
 
 }
