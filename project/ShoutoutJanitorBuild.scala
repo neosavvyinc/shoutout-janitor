@@ -20,9 +20,11 @@ object ShoutoutJanitorBuild extends Build {
 
       resolvers += "spray" at "http://repo.spray.io",
       resolvers += "spray nightly" at "http://nightlies.spray.io/",
+      resolvers += "bintray" at "http://jcenter.bintray.com",
       resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
       resolvers += "jets3t" at "http://www.jets3t.org/maven2",
 
+      libraryDependencies += "com.relayrides" % "pushy" % "0.3",
       libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.22",
       libraryDependencies += "com.jolbox" % "bonecp" % "0.7.1.RELEASE",
       libraryDependencies += "com.github.tototoshi" %% "slick-joda-mapper" % "1.1.0",
@@ -35,6 +37,7 @@ object ShoutoutJanitorBuild extends Build {
 //      libraryDependencies += "com.typesafe.akka" %% "akka-quartz-scheduler" % "1.2.0-akka-2.1.x",
       libraryDependencies += "com.typesafe.slick" %% "slick" % "2.0.0",
       libraryDependencies += "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.4",
+
 
       libraryDependencies += "org.specs2" %% "specs2" % "2.3.13" % "test")
   )

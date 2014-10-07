@@ -47,6 +47,30 @@ package object repository extends JanitorConfig {
     val findUserByUrl = this.findBy(_.profilePictureUrl)
   }
 
+  def findUsersWithOutstandingMessages() : List[String] = {
+    import Q.interpolation
+
+    db.withSession { implicit session: Session =>
+
+      val usersWithOutstandingMessages = sql"""SELECT
+          DISTINCT SS.PUSH_NOTIFIER_TOKEN
+          FROM
+          USERS U JOIN SHOUTOUTS S ON U.ID = S.RECIPIENT_ID
+          JOIN
+          SESSIONS SS ON U.ID = SS.USERID
+          WHERE
+          S.IS_VIEWED = 0 AND
+            S.IS_CLEANED = 0 AND
+            S.IS_BLOCKED = 0 AND
+            S.CREATED_TIMESTAMP < (NOW() - INTERVAL 1 DAY) AND
+          SS.PUSH_NOTIFIER_TOKEN IS NOT NULL""".as[String]
+
+      usersWithOutstandingMessages.list()
+
+    }
+
+  }
+
   def findUsersByUrl ( url : String )= {
     db.withSession{
       implicit s =>

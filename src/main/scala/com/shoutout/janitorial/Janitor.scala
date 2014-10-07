@@ -3,6 +3,7 @@ package com.shoutout.janitorial
 import akka.actor.{Actor, ActorLogging}
 import com.shoutout.db.{JanitorFlatStat, JanitorStat, Shoutout}
 import com.shoutout.db.repository._
+import com.shoutout.integration.ApplePushNotifier
 import com.shoutout.util.{Stats, MandrillConfiguration, MandrillUtil, Dates}
 import org.jets3t.service.model.S3Object
 
@@ -16,6 +17,7 @@ object Janitor {
   case object CleanupFullyViewedShoutouts
   case object CleanupOrphanedShoutoutImages
   case object SendMailSummary
+  case object SendUnreadMessagesNotification
 
 }
 
@@ -23,6 +25,40 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
   import com.shoutout.janitorial.Janitor._
 
   def receive = {
+    case SendUnreadMessagesNotification =>
+
+      log.info("----------- Beginning unread message notification Process ------------")
+
+
+      // find all the users that have unread messages older than 24 hours
+
+      val tokens = findUsersWithOutstandingMessages()
+      val apns = new ApplePushNotifier
+      apns.sendMessageToRecipients(tokens, "You have unviewed photos")
+
+      val folksReminded = tokens.length
+
+      val formattedUpdateString = s"""
+        | <br/> We reminded ${folksReminded} folks to check their unread messages.
+        | <br/>
+        | <br/> Welp, that's it.
+        | <br/>
+        | <br/> -Janitor
+      """.stripMargin
+
+      MandrillUtil.sendMailViaMandrill(
+        new MandrillConfiguration(
+          MandrillSettings.apiKey,
+          MandrillSettings.smtpPort,
+          MandrillSettings.smtpHost,
+          MandrillSettings.username),
+        MandrillSettings.recipients,
+        formattedUpdateString,
+        "Shoutout Unviewed Reminders"
+    )
+
+      log.info("----------- Ending the unread message notification Process -----------")
+
     case CleanupProfiles =>
       log.info("------------ Begining the Profile Cleanup Process ------------")
 
@@ -146,9 +182,9 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
           MandrillSettings.smtpHost,
           MandrillSettings.username),
           MandrillSettings.recipients,
-          stats,
-          formattedUpdateString
-      )
+          formattedUpdateString,
+          "Daily Shoutout Janitorial Report - we be cleanin..."
+    )
 
       // reset the counters and update the alltime stats
       updateFlatStats( JanitorFlatStat(

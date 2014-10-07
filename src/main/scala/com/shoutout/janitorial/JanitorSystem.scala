@@ -21,6 +21,7 @@ object JanitorSystem extends App {
   scheduler.schedule("ViewedShoutoutCleanupService", janitor, Janitor.CleanupFullyViewedShoutouts)
   scheduler.schedule("OrphanedShoutoutImages", janitor, Janitor.CleanupOrphanedShoutoutImages)
   scheduler.schedule("SummaryMailer", janitor, Janitor.SendMailSummary)
+  scheduler.schedule("SendUnreadMessagesNotification", janitor, Janitor.SendUnreadMessagesNotification)
 
 }
 

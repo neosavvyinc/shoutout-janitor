@@ -15,12 +15,12 @@ import java.util.List;
 public class MandrillUtil {
 
 
-    public static void sendMailViaMandrill( MandrillConfiguration configuration, List<String> recipientEmail, Stats stats, String updateString ) throws IOException, MandrillApiError {
+    public static void sendMailViaMandrill( MandrillConfiguration configuration, List<String> recipientEmail, String updateString, String subject) throws IOException, MandrillApiError {
 
         MandrillApi mandrillApi  = new MandrillApi(configuration.getApiKey());
 
         MandrillMessage message = new MandrillMessage();
-        message.setSubject("Daily Shoutout Janitorial Report - we be cleanin...");
+        message.setSubject(subject);
         message.setHtml(updateString);
 
         message.setAutoText(true);

@@ -52,4 +52,13 @@ trait JanitorConfig {
     private def mandrill = cfg.getConfig("mandrill")
   }
 
+  object APNSSettings {
+
+    val keyStorePassword = apnsSettings.getString("keyStorePassword")
+    val connectionCount = apnsSettings.getString("connectionCount")
+    val productionCertPath = apnsSettings.getString("productionCertPath")
+
+    private def apnsSettings = cfg.getConfig("apple")
+  }
+
 }
