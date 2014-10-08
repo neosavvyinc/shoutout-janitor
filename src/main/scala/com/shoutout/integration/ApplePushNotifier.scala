@@ -59,9 +59,19 @@ class ApplePushNotifier extends JanitorConfig {
       "\ue10d"
     )
 
-  private def getLocaleFromString( string : String ): Locale = {
+  private def getLocaleFromString(string : String) : Locale = {
     try {
-      LocaleUtils.toLocale( string )
+
+      if (string.startsWith("zh")) {
+        if (string.toLowerCase().contains("hant")) {
+          Locale.TRADITIONAL_CHINESE
+        } else {
+          Locale.SIMPLIFIED_CHINESE
+        }
+      } else {
+        LocaleUtils.toLocale(string)
+      }
+
     } catch {
       case e : Exception => Locale.ENGLISH
     }
