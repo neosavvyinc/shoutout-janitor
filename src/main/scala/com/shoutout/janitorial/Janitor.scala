@@ -34,7 +34,7 @@ class Janitor extends Actor with ActorLogging with ProfileJanitor with ShoutoutJ
 
       val tokens = findUsersWithOutstandingMessages()
       val apns = new ApplePushNotifier
-      apns.sendMessageToRecipients(tokens, "You have unviewed photos")
+      apns.sendMessageToRecipients(tokens)
 
       val folksReminded = tokens.length
 

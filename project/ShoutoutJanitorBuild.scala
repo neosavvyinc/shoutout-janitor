@@ -16,6 +16,7 @@ object ShoutoutJanitorBuild extends Build {
       organization := "com.shoutout",
       version := "1.0",
       scalaVersion := "2.10.3",
+      javaOptions ++= Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"),
       scalacOptions ++= Seq("-feature", "-deprecation"),
 
       resolvers += "spray" at "http://repo.spray.io",
@@ -24,6 +25,7 @@ object ShoutoutJanitorBuild extends Build {
       resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
       resolvers += "jets3t" at "http://www.jets3t.org/maven2",
 
+      libraryDependencies += "com.netaporter" %% "scala-i18n" % "0.1",
       libraryDependencies += "com.relayrides" % "pushy" % "0.3",
       libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.22",
       libraryDependencies += "com.jolbox" % "bonecp" % "0.7.1.RELEASE",
@@ -37,6 +39,7 @@ object ShoutoutJanitorBuild extends Build {
 //      libraryDependencies += "com.typesafe.akka" %% "akka-quartz-scheduler" % "1.2.0-akka-2.1.x",
       libraryDependencies += "com.typesafe.slick" %% "slick" % "2.0.0",
       libraryDependencies += "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.4",
+      libraryDependencies += "commons-lang" % "commons-lang" % "2.6",
 
 
       libraryDependencies += "org.specs2" %% "specs2" % "2.3.13" % "test")
